@@ -1,42 +1,35 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 )
 
-type Task struct {
-	ID        int    `json:"id"`
-	Title     string `json:"title"`
-	Completed bool   `json:"completed"`
+type api struct{
+	addr string
 }
 
-var tasks = []Task{
-
-	{ID: 1, Title: "Learning fundamentals of Go", Completed: true},
-	{ID: 2, Title: "Writing REST API", Completed: false},
+func (a *api) getUsersHandler(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("Get Method"))
+}
+func (a *api) postUsersHandler(w http.ResponseWriter, r *http.Request){
+	w.Write([]byte("Post Method"))
 }
 
-func homeHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello, my first Backend on Go")
+func main(){
+api:=&api{addr:":8080"}
+mux:=http.NewServeMux()
+srv:=&http.Server{
+	Addr:api.addr,
+	Handler:mux,
 }
 
-func getTaskHandler(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tasks)
+mux.HandleFunc("GET /users",api.getUsersHandler)
+mux.HandleFunc("POST /users",api.postUsersHandler)
+log.Printf("Server is running on %s",api.addr)
+if err:=srv.ListenAndServe();
+err!=nil{
+	log.Fatal(err)
 }
 
-func main() {
-	http.HandleFunc("/home", homeHandler)
-	http.HandleFunc("/tasks", getTaskHandler)
-
-	fmt.Println("Server is run on http://localhost:8080")
-
-	err := http.ListenAndServe(":8080", nil)
-
-	if err != nil {
-		fmt.Printf("Error %v", err)
-	}
 }
